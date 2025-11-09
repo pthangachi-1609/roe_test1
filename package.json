@@ -1,0 +1,9 @@
+{
+  "name": "data-dash-qa-scraper",
+  "version": "1.0.0",
+  "description": "Scrapes dynamic reports for QA summation.",
+  "main": "sum_tables.js",
+  "dependencies": {
+    "playwright": "^1.40.1"
+  }
+}

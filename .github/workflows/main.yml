@@ -1,0 +1,33 @@
+# .github/workflows/main.yml
+name: DataDash Report QA Automation
+
+on:
+  # Allows you to run this workflow manually
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  scrape_and_sum:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Node Dependencies
+        run: npm install
+
+      - name: Install Playwright Browsers
+        run: npx playwright install chromium
+        
+      # MANDATORY STEP NAME CONTAINING THE EMAIL ADDRESS
+      - name: Run Playwright Scraper - 22ds3000113@ds.study.iitm.ac.in
+        run: node sum_tables.js
+        # The script's output (the final sum) will be visible in the logs for this step.
