@@ -5,15 +5,14 @@ from playwright.async_api import async_playwright
 
 # --- Configuration ---
 BASE_URL = 'https://sanand0.github.io/tdsdata/js_table/'
-SEEDS = range(25, 35) # Generates seeds 25 to 34
+SEEDS = range(25, 35) 
 
 async def run():
-    # Initialize total_sum as Python's native int, which has arbitrary precision
+    # Initialize total_sum as Python's native int (arbitrary precision)
     total_sum = 0
     
     async with async_playwright() as p:
-        # Note: If Playwright itself is converting to float during extraction,
-        # you might need to use page.evaluate to force string extraction.
+        # Launch browser without head (headless mode)
         browser = await p.chromium.launch()
         page = await browser.new_page()
 
@@ -25,30 +24,29 @@ async def run():
             try:
                 await page.goto(url, wait_until="domcontentloaded", timeout=30000)
                 
-                # Use page.evaluate to extract the raw text content of the table, 
-                # ensuring no intermediate floating-point conversion by Playwright.
+                # CRITICAL STEP: Use page.evaluate to get the raw text 
+                # to prevent floating-point conversion by the browser or Playwright's high-level methods.
                 table_text_content = await page.evaluate('''
                     () => {
                         const table = document.querySelector('table');
-                        // Ensure text is extracted as a single raw string
+                        // Get raw text and remove all whitespace for concatenation
                         return table ? table.textContent.replace(/\s+/g, '') : '';
                     }
                 ''')
                 
-                # Regex to find sequences of digits (the large numbers)
+                # Regex to find sequences of digits (assuming the numbers are integers)
                 numbers_str = re.findall(r'\d+', table_text_content)
                 
                 page_sum = 0
                 for num_str in numbers_str:
                     try:
-                        # CRITICAL FIX: Use int() instead of float() to handle large integers
+                        # CRITICAL FIX: Use int() for arbitrary precision
                         num = int(num_str)
                         page_sum += num
                     except ValueError:
-                        pass # Ignore non-integer strings
+                        pass
                 
                 total_sum += page_sum
-                # Print page sum (Python int printing will be correct)
                 print(f"Visited {url}. Page sum: {page_sum}")
 
             except Exception as e:
@@ -56,14 +54,13 @@ async def run():
 
         await browser.close()
 
-    # Final result will be a very large, correctly calculated integer
+    # The final printout will be the huge, correct integer sum.
     print('\n--- FINAL QA SUM ---')
     print(total_sum)
 
 if __name__ == "__main__":
     import os
-    # Playwright requires the event loop to be properly set up, especially 
-    # when running from environments like GitHub Actions.
+    # Setup for compatibility (optional, but good practice)
     if os.name == 'nt':
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     asyncio.run(run())
